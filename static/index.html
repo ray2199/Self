@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Recommendation System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #f9f9f9;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Recommendation System</h1>
+    
+    <h2>Popular Product Recommendations</h2>
+    <form id="popularForm">
+        <label for="top_n">Top N Products:</label>
+        <input type="number" id="top_n" name="top_n" min="1" value="10">
+        <button type="submit">Get Recommendations</button>
+    </form>
+    <div id="popularResults"></div>
+
+    <h2>Collaborative Filtering Recommendations</h2>
+    <form id="collaborativeForm">
+        <label for="product_id">Product ID:</label>
+        <input type="text" id="product_id" name="product_id">
+        <label for="top_n">Top N Products:</label>
+        <input type="number" id="top_n" name="top_n" min="1" value="10">
+        <button type="submit">Get Recommendations</button>
+    </form>
+    <div id="collaborativeResults"></div>
+
+    <h2>Content-Based Recommendations</h2>
+    <form id="contentForm">
+        <label for="query">Query:</label>
+        <input type="text" id="query" name="query">
+        <label for="top_n_content">Top N Products:</label>
+        <input type="number" id="top_n_content" name="top_n_content" min="1" value="10">
+        <button type="submit">Get Recommendations</button>
+    </form>
+    <div id="contentResults"></div>
+
+    <script>
+        document.getElementById('popularForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const top_n = document.getElementById('top_n').value;
+            const response = await fetch('/recommend/popular', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ top_n: parseInt(top_n) })
+            });
+            const result = await response.json();
+            let html = '<h3>Popular Product Recommendations</h3><ul>';
+            result.recommendations.forEach(item => {
+                html += `<li>${item}</li>`;
+            });
+            html += '</ul>';
+            document.getElementById('popularResults').innerHTML = html;
+        });
+
+        document.getElementById('collaborativeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const product_id = document.getElementById('product_id').value;
+            const top_n = document.getElementById('top_n').value;
+            const response = await fetch('/recommend/collaborative', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ product_id, top_n: parseInt(top_n) })
+            });
+            const result = await response.json();
+            let html = '<h3>Collaborative Filtering Recommendations</h3><ul>';
+            result.recommendations.forEach(item => {
+                html += `<li>${item}</li>`;
+            });
+            html += '</ul>';
+            document.getElementById('collaborativeResults').innerHTML = html;
+        });
+
+        document.getElementById('contentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('query').value;
+            const top_n_content = document.getElementById('top_n_content').value;
+            const response = await fetch(`/recommend/content?query=${encodeURIComponent(query)}&top_n=${top_n_content}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const result = await response.text();
+            document.getElementById('contentResults').innerHTML = result;
+        });
+    </script>
+</body>
+</html>
